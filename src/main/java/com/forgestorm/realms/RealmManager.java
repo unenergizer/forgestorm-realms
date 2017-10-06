@@ -4,6 +4,7 @@ import com.forgestorm.spigotcore.constants.CommonSounds;
 import com.forgestorm.spigotcore.constants.SpigotCoreMessages;
 import com.forgestorm.spigotcore.database.PlayerProfileData;
 import com.forgestorm.spigotcore.util.display.BossBarAnnouncer;
+import com.forgestorm.spigotcore.util.logger.ColorLogger;
 import com.forgestorm.spigotcore.util.math.TimeUnit;
 import lombok.Getter;
 import lombok.Setter;
@@ -195,6 +196,7 @@ public class RealmManager extends BukkitRunnable implements Listener {
             return;
         }
 
+        // Make sure the player is in the main lobby world.
         if (!blockLocation.getWorld().equals(Bukkit.getWorlds().get(0))) {
             player.sendMessage(ChatColor.RED + "You must be in a lobby world to open your realm.");
             CommonSounds.ACTION_FAILED.playSound(player);
@@ -515,7 +517,7 @@ public class RealmManager extends BukkitRunnable implements Listener {
                 realms.setIdleTime(idleTime + 1);
 
                 if (idleTime == 1)
-                    System.out.println("[REALM] RealmCommands is idle, starting idle countdown. Time: " + idleTime);
+                    ColorLogger.DARK_BLUE.printLog("[REALM] RealmCommands is idle, starting idle countdown. Time: " + idleTime);
 
                 // If no players are inside the realm, close it after X time.
                 if (idleTime >= maxIdleTime) {
@@ -527,7 +529,7 @@ public class RealmManager extends BukkitRunnable implements Listener {
                 // Reset idle time, because someone is inside the realm.
                 if (idleTime > 0) {
                     realms.setIdleTime(0);
-                    System.out.println("[REALM] The realm is no longer idle, resetting countdown.");
+                    ColorLogger.DARK_BLUE.printLog("[REALM] The realm is no longer idle, resetting countdown.");
                 }
             }
 
@@ -595,17 +597,19 @@ public class RealmManager extends BukkitRunnable implements Listener {
      *
      * @param event A Bukkit event for BlockPhysics.
      */
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void onBlockPhysics(BlockPhysicsEvent event) {
         if (event.getBlock().getType().equals(Material.PORTAL) || event.getChangedType().equals(Material.PORTAL)) {
             event.setCancelled(true);
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
+
+        System.out.println("REALM BLOCK BREAK");
 
         // Let players break blocks in their loadedRealms.
         if (player.getWorld().equals(Bukkit.getWorlds().get(0))) {
@@ -627,11 +631,13 @@ public class RealmManager extends BukkitRunnable implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void onBlockDamage(BlockDamageEvent event) {
         Block block = event.getBlock();
         Material type = block.getType();
         Player player = event.getPlayer();
+
+        System.out.println("REALM BLOCK DAMAGE");
 
         if (player.getWorld().equals(Bukkit.getWorlds().get(0))) {
 
@@ -668,13 +674,16 @@ public class RealmManager extends BukkitRunnable implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onBlockPlace(BlockPlaceEvent event) {
         Player player = event.getPlayer();
         if (player.getWorld().equals(Bukkit.getWorlds().get(0))) return;
 
         boolean builtInsideRealm = buildingInsideRealm(event.getBlockPlaced().getLocation());
         boolean canBuild = canBuild(player);
+
+
+        System.out.println("REALM BLOCK PLACE");
 
         //Player can build but is trying to build outside realm tier.
         if (canBuild && !builtInsideRealm) {

@@ -1,5 +1,6 @@
 package com.forgestorm.realms.remotefilemanager;
 
+import com.forgestorm.spigotcore.util.logger.ColorLogger;
 import org.bukkit.Bukkit;
 import org.bukkit.WorldCreator;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -13,7 +14,6 @@ import java.util.concurrent.BlockingQueue;
 public class SyncWorldLoader extends BukkitRunnable {
 
     private final int capacity = 100;
-    private final String tempPath = Bukkit.getWorldContainer() + "/temp/";
     private BlockingQueue<String> worldLoaderQueue = new ArrayBlockingQueue<>(capacity);//<String> worldName/playerUUID
 
     /**
@@ -24,7 +24,7 @@ public class SyncWorldLoader extends BukkitRunnable {
      */
     public boolean addWorldName(String worldNameToAdd) {
         if (worldLoaderQueue.size() < capacity) {
-            System.out.println("[REALM] World added to SyncWorldLoader: " + worldNameToAdd);
+            ColorLogger.DARK_PURPLE.printLog("[REALM] World added to SyncWorldLoader: " + worldNameToAdd);
             worldLoaderQueue.add(worldNameToAdd);
             return true;
         }
@@ -37,7 +37,7 @@ public class SyncWorldLoader extends BukkitRunnable {
         if (!worldLoaderQueue.isEmpty()) {
             String worldName = worldLoaderQueue.remove();
 
-            System.out.println("[REALM] SyncWorldLoader loading world: " + worldName);
+            ColorLogger.DARK_PURPLE.printLog("[REALM] SyncWorldLoader loading world: " + worldName);
             Bukkit.createWorld(new WorldCreator(worldName));
         }
     }

@@ -1,6 +1,7 @@
 package com.forgestorm.realms.remotefilemanager;
 
 import com.forgestorm.realms.Realms;
+import com.forgestorm.spigotcore.util.logger.ColorLogger;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.bukkit.Bukkit;
@@ -58,7 +59,7 @@ public class AsyncRealmUploadFTP extends BukkitRunnable {
     public void processQueue() {
         if (!worldUploadQueue.isEmpty()) {
             String fileName = worldUploadQueue.remove();
-            System.out.println("[REALM] Exit upload queue: " + fileName);
+            ColorLogger.DARK_PURPLE.printLog("[REALM] Exit upload queue: " + fileName);
             saveRealm(fileName);
         }
     }
@@ -73,7 +74,7 @@ public class AsyncRealmUploadFTP extends BukkitRunnable {
         if (asyncUnload) {
             // This code is ran if the server is still running and a player has closed their realm.
             if (worldUploadQueue.size() < capacity) {
-                System.out.println("[REALM] Adding to FTP upload queue: " + uuidFileName);
+                ColorLogger.DARK_PURPLE.printLog("[REALM] Adding to FTP upload queue: " + uuidFileName);
                 worldUploadQueue.add(uuidFileName);
             }
         } else {
@@ -102,11 +103,11 @@ public class AsyncRealmUploadFTP extends BukkitRunnable {
      */
     public void saveRealm(String uuidFileName) {
         //Zip world directory.
-        System.out.println("[REALM] Zipping: " + uuidFileName);
+        ColorLogger.DARK_PURPLE.printLog("[REALM] Zipping: " + uuidFileName);
         ZipUtil.pack(new File(uuidFileName), new File(tempPath + uuidFileName + zip));
 
         //Connect to FTP
-        System.out.println("[REALM] Starting realm upload via FTP.");
+        ColorLogger.DARK_PURPLE.printLog("[REALM] Starting realm upload via FTP.");
         Player player = Bukkit.getPlayer(UUID.fromString(uuidFileName));
         FTPClient ftpClient = new FTPClient();
         InputStream inputStream = null;
@@ -126,17 +127,17 @@ public class AsyncRealmUploadFTP extends BukkitRunnable {
             inputStream.close();
 
             if (done) {
-                System.out.println("[REALM] The realm was uploaded successfully.");
+                ColorLogger.DARK_PURPLE.printLog("[REALM] The realm was uploaded successfully.");
                 if (player != null)
                     player.sendMessage(ChatColor.GREEN + "Uploading complete!! Your realm has been saved.");
                 deleteFiles(uuidFileName);
             }
 
         } catch (IOException ex) {
-            System.out.println("Error: " + ex.getMessage());
+            ColorLogger.DARK_PURPLE.printLog("Error: " + ex.getMessage());
             ex.printStackTrace();
         } finally {
-            System.out.println("[REALM] Closing FTP connection.");
+            ColorLogger.DARK_PURPLE.printLog("[REALM] Closing FTP connection.");
 
             try {
                 if (inputStream != null) inputStream.close();
@@ -164,6 +165,6 @@ public class AsyncRealmUploadFTP extends BukkitRunnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("[REALM] The realm directory and zip file were removed.");
+        ColorLogger.DARK_PURPLE.printLog("[REALM] The realm directory and zip file were removed.");
     }
 }

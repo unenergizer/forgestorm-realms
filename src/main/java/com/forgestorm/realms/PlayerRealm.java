@@ -1,5 +1,6 @@
 package com.forgestorm.realms;
 
+import com.forgestorm.realms.world.WorldManager;
 import com.forgestorm.spigotcore.database.PlayerProfileData;
 import com.forgestorm.spigotcore.util.display.BossBarAnnouncer;
 import com.forgestorm.spigotcore.util.display.Hologram;
@@ -191,7 +192,9 @@ public class PlayerRealm {
             // Check to see if the player has a realm.
             if (profileData.isHasRealm()) {
                 //Load world
-                loadPlayerWorldViaFTP();
+                //TODO: REMOVE FTP CODE!
+                //loadPlayerWorldViaFTP();
+                loadPlayerWorld();
             } else {
                 // The player does not have a realm. Let's give them the default one.
                 //Copy default world from folder to main directory.
@@ -210,7 +213,8 @@ public class PlayerRealm {
                             new File("emptyworld").renameTo(new File(worldName));
 
                             //Prepare for world load.
-                            plugin.getSyncWorldLoader().addWorldName(worldName);
+                            //plugin.getSyncWorldLoader().addWorldName(worldName);
+                            WorldManager.getInstance().loadWorld(worldName);
 
                             //Update profile
                             profileData.setHasRealm(true);
@@ -254,7 +258,14 @@ public class PlayerRealm {
         hologram.removeHolograms();
 
         // Save and unload the world
-        plugin.getSyncWorldUnloader().unloadWorld(realmOwner.getUniqueId().toString(), asyncUnload);
+        WorldManager.getInstance().unloadWorld(realmOwner.getUniqueId().toString());
+
+        // Following line is to save and unload the world via FTP.
+        //plugin.getSyncWorldUnloader().unloadWorld(realmOwner.getUniqueId().toString(), asyncUnload);
+
+        realmOwner.sendMessage("");
+        realmOwner.sendMessage(ChatColor.YELLOW + "Saving your realm...");
+        realmOwner.sendMessage(ChatColor.GREEN + "Your realm has been saved.");
     }
 
     /**
@@ -269,12 +280,23 @@ public class PlayerRealm {
         return false;
     }
 
+//    /**
+//     * This will toggle the downloading of the players realm from the FTP.
+//     */
+//    private void loadPlayerWorldViaFTP() {
+//        String name = realmOwner.getUniqueId().toString();
+//        plugin.getAsyncRealmDownloadFTP().downloadWorld(name);
+//    }
+
     /**
      * This will toggle the downloading of the players realm from the FTP.
      */
-    private void loadPlayerWorldViaFTP() {
+    private void loadPlayerWorld() {
         String name = realmOwner.getUniqueId().toString();
-        plugin.getAsyncRealmDownloadFTP().downloadWorld(name);
+        WorldManager.getInstance().copyWorld(name);
+
+        realmOwner.sendMessage("");
+        realmOwner.sendMessage(ChatColor.YELLOW + "Loading your realm...");
     }
 
     /**
