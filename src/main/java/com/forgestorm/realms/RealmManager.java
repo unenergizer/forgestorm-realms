@@ -256,7 +256,7 @@ public class RealmManager extends BukkitRunnable implements Listener {
                 //Setup boss bar for player, if needed.
                 if (realm.getTimeTillpvpRenabled() > 0) realm.getBossBar().showBossBar(player);
 
-                //RealmCommands owner code
+                //Realm owner code
                 if (realm.getRealmOwner().equals(player)) {
                     //Set owner flying if enabled.
                     if (realm.getTimeTillFlyingDisabled() > 1) {
@@ -488,7 +488,7 @@ public class RealmManager extends BukkitRunnable implements Listener {
 
         }
 
-        //RealmCommands lock
+        //Realm lock
         Iterator<RealmLock> iterator = lockedPlayerRealms.iterator();
         while (iterator.hasNext()) {
             RealmLock realmLock = iterator.next();
@@ -517,7 +517,7 @@ public class RealmManager extends BukkitRunnable implements Listener {
                 realms.setIdleTime(idleTime + 1);
 
                 if (idleTime == 1)
-                    ColorLogger.DARK_BLUE.printLog("[REALM] RealmCommands is idle, starting idle countdown. Time: " + idleTime);
+                    ColorLogger.DARK_BLUE.printLog("[REALM] Realm is idle, starting idle countdown. Time: " + idleTime);
 
                 // If no players are inside the realm, close it after X time.
                 if (idleTime >= maxIdleTime) {
@@ -843,11 +843,11 @@ public class RealmManager extends BukkitRunnable implements Listener {
                         if (event.getItem() != null && event.getItem().getType().equals(Material.COMPASS)) {
                             PlayerRealm realm = getPlayerRealm(player);
 
-                            //Remove Old RealmCommands inside Portal
+                            //Remove Old Realm inside Portal
                             realm.getInsideBlockTop().setType(Material.AIR);
                             realm.getInsideBlockBottom().setType(Material.AIR);
 
-                            //Set New RealmCommands inside Portal
+                            //Set New Realm inside Portal
                             realm.setPortalInsideLocation(block.getLocation().add(0, 1, 0));
                             realm.setPlayerInsidePortal(true);
 
@@ -877,7 +877,7 @@ public class RealmManager extends BukkitRunnable implements Listener {
 
         //If the worldname length is equal to 36 we can assume it is a player realm.
         //The player loadedRealms world names are the players uuid.
-        //So Player UUID = Player RealmCommands World Name (and vise versa)
+        //So Player UUID = Player Realm World Name (and vise versa)
         if (worldName.length() == 36) {
             //Set the inside portal blocks for this realm.
             new BukkitRunnable() {

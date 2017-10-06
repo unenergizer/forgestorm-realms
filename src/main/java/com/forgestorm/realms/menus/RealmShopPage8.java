@@ -33,7 +33,7 @@ public class RealmShopPage8 extends Menu {
     public RealmShopPage8(SpigotCore plugin) {
         super(plugin);
         this.plugin = plugin;
-        init("RealmCommands Shop: Page 8", 6);
+        init("Realm Shop: Page 8", 6);
         makeMenuItems();
     }
 
