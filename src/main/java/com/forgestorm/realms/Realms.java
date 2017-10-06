@@ -1,10 +1,6 @@
 package com.forgestorm.realms;
 
 import com.forgestorm.realms.commands.RealmCommands;
-import com.forgestorm.realms.remotefilemanager.AsyncRealmDownloadFTP;
-import com.forgestorm.realms.remotefilemanager.AsyncRealmUploadFTP;
-import com.forgestorm.realms.remotefilemanager.SyncWorldLoader;
-import com.forgestorm.realms.remotefilemanager.SyncWorldUnloader;
 import com.forgestorm.realms.world.WorldManager;
 import com.forgestorm.spigotcore.SpigotCore;
 import lombok.Getter;
@@ -32,10 +28,6 @@ public class Realms extends JavaPlugin {
 
     private SpigotCore spigotCore = (SpigotCore) Bukkit.getServer().getPluginManager().getPlugin("FS-SpigotCore");
     private RealmManager realmManager;
-//    private SyncWorldLoader syncWorldLoader;
-//    private SyncWorldUnloader syncWorldUnloader;
-//    private AsyncRealmDownloadFTP asyncRealmDownloadFTP;
-//    private AsyncRealmUploadFTP asyncRealmUploadFTP;
 
     /**
      * Enables player made realms.
@@ -44,17 +36,9 @@ public class Realms extends JavaPlugin {
     public void onEnable() {
         WorldManager.getInstance().setup(this);
         realmManager = new RealmManager(this);
-//        syncWorldLoader = new SyncWorldLoader();
-//        syncWorldUnloader = new SyncWorldUnloader(this);
-//        asyncRealmDownloadFTP = new AsyncRealmDownloadFTP(this);
-//        asyncRealmUploadFTP = new AsyncRealmUploadFTP(this);
 
         // Start Bukkit Tasks
         realmManager.runTaskTimer(this, 0, 20);
-//        syncWorldLoader.runTaskTimer(this, 0, 5);
-//        syncWorldUnloader.runTaskTimer(this, 0, 5);
-//        asyncRealmDownloadFTP.runTaskTimerAsynchronously(this, 0, 20);
-//        asyncRealmUploadFTP.runTaskTimerAsynchronously(this, 0, 20);
 
         // Register Commands
         getCommand("realm").setExecutor(new RealmCommands(this));

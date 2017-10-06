@@ -109,7 +109,7 @@ class AsyncFileManager extends BukkitRunnable {
                     new File(worldName),
                     new File("realms" + File.separator + worldName));
 
-            // Now delete the world in the server directory
+            // Delete world
             deleteFolder(worldName);
 
             // Now unlock the saving of worlds

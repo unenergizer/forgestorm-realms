@@ -116,12 +116,12 @@ public class RealmManager extends BukkitRunnable implements Listener {
 
     /**
      * This is called when the server is shutting down. This will
-     * being the process of unloading all realm worlds and uploading
-     * them via FTP.
+     * being the process of unloading all realm worlds and saving
+     * them to disk.
      */
     void disable() {
         for (Entry<UUID, PlayerRealm> entry : loadedRealms.entrySet()) {
-            unloadRealm(entry.getValue(), false);
+            unloadRealm(entry.getValue());
         }
         loadedRealms.clear();
 
@@ -171,10 +171,10 @@ public class RealmManager extends BukkitRunnable implements Listener {
      *
      * @param realm The realm we are working with.
      */
-    private void unloadRealm(PlayerRealm realm, boolean asyncUnload) {
+    private void unloadRealm(PlayerRealm realm) {
         Player player = realm.getRealmOwner();
         lockedPlayerRealms.add(new RealmLock(player));
-        realm.closeRealm(asyncUnload);
+        realm.closeRealm();
         loadedRealms.remove(player.getUniqueId());
     }
 
@@ -365,7 +365,7 @@ public class RealmManager extends BukkitRunnable implements Listener {
                     removeRealms.put(loadedRealms.get(uuid), 60 * 5);
                 } else {
                     if (removeRealms.containsKey(loadedRealms.get(uuid))) return;
-                    unloadRealm(realm, true);
+                    unloadRealm(realm);
                 }
             }
         }
@@ -437,8 +437,8 @@ public class RealmManager extends BukkitRunnable implements Listener {
 
     /**
      * Prevent players from opening their realm if a realm lock is in place.
-     * A realm lock is used to give the FTP time to upload their realm before
-     * they can open it again.
+     * A realm lock is used to give the WorldManager time to save their realm
+     * before they can open it again.
      *
      * @param player The player who wants to open their realm.
      * @return True if the realm is not locked, false otherwise.
@@ -481,7 +481,7 @@ public class RealmManager extends BukkitRunnable implements Listener {
             }
 
             if (countDown <= 0 || players.size() == 0) {
-                unloadRealm(realm, true); // Begin world unload and FTP transfer.
+                unloadRealm(realm); // Begin world unload
             } else {
                 removeRealms.replace(realm, --countDown);
             }
@@ -523,7 +523,7 @@ public class RealmManager extends BukkitRunnable implements Listener {
                 if (idleTime >= maxIdleTime) {
                     realms.getRealmOwner().sendMessage(ChatColor.RED + "Your realm has been idle for 5 minutes. Closing it now.");
                     realms.setIdleTime(0);
-                    unloadRealm(realms, true);
+                    unloadRealm(realms);
                 }
             } else {
                 // Reset idle time, because someone is inside the realm.
@@ -609,17 +609,21 @@ public class RealmManager extends BukkitRunnable implements Listener {
         Player player = event.getPlayer();
         Block block = event.getBlock();
 
-        System.out.println("REALM BLOCK BREAK");
-
         // Let players break blocks in their loadedRealms.
         if (player.getWorld().equals(Bukkit.getWorlds().get(0))) {
-            //PLAYER IS IN A LOBBY WORLD.
+            /*
+            PLAYER IS IN A LOBBY WORLD.
+             */
+
             // Let players break their portals.
             if (block.getType() == Material.PORTAL && player.getGameMode() != GameMode.CREATIVE) {
                 removePlayerRealmAtLocation(player, block.getLocation());
             }
         } else if (player.getWorld().getName().length() == 36) {
-            //THE FOLLOWING CODE REPRESENTS ACTIONS INSIDE AN OPEN REALM.
+            /*
+            THE FOLLOWING CODE REPRESENTS ACTIONS INSIDE AN OPEN REALM.
+             */
+
             // Prevent manual portal breaks inside loadedRealms.
             if (block.getType() == Material.PORTAL) {
                 event.setCancelled(true);
@@ -627,17 +631,15 @@ public class RealmManager extends BukkitRunnable implements Listener {
             }
 
             // If the player is a friend in a realm, they can build.
-            event.setCancelled(canBuild(player));
+            event.setCancelled(!canBuild(player));
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onBlockDamage(BlockDamageEvent event) {
         Block block = event.getBlock();
         Material type = block.getType();
         Player player = event.getPlayer();
-
-        System.out.println("REALM BLOCK DAMAGE");
 
         if (player.getWorld().equals(Bukkit.getWorlds().get(0))) {
 
@@ -658,7 +660,10 @@ public class RealmManager extends BukkitRunnable implements Listener {
                 removePlayerRealmAtLocation(player, block.getLocation());
             }
         } else if (player.getWorld().getName().length() == 36) {
-            //THE FOLLOWING CODE REPRESENTS ACTIONS INSIDE AN OPEN REALM.
+            /*
+            THE FOLLOWING CODE REPRESENTS ACTIONS INSIDE AN OPEN REALM.
+             */
+
             // Prevent manual portal breaks inside loadedRealms.
             if (event.getBlock().getType() == Material.PORTAL) {
                 event.setCancelled(true);
@@ -674,16 +679,13 @@ public class RealmManager extends BukkitRunnable implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onBlockPlace(BlockPlaceEvent event) {
         Player player = event.getPlayer();
         if (player.getWorld().equals(Bukkit.getWorlds().get(0))) return;
 
         boolean builtInsideRealm = buildingInsideRealm(event.getBlockPlaced().getLocation());
         boolean canBuild = canBuild(player);
-
-
-        System.out.println("REALM BLOCK PLACE");
 
         //Player can build but is trying to build outside realm tier.
         if (canBuild && !builtInsideRealm) {

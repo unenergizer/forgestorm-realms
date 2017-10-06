@@ -192,12 +192,15 @@ public class PlayerRealm {
             // Check to see if the player has a realm.
             if (profileData.isHasRealm()) {
                 //Load world
-                //TODO: REMOVE FTP CODE!
-                //loadPlayerWorldViaFTP();
                 loadPlayerWorld();
+
             } else {
                 // The player does not have a realm. Let's give them the default one.
                 //Copy default world from folder to main directory.
+
+                realmOwner.sendMessage("");
+                realmOwner.sendMessage(ChatColor.YELLOW + "Generating a new realm...");
+
                 new BukkitRunnable() {
 
                     @Override
@@ -213,7 +216,6 @@ public class PlayerRealm {
                             new File("emptyworld").renameTo(new File(worldName));
 
                             //Prepare for world load.
-                            //plugin.getSyncWorldLoader().addWorldName(worldName);
                             WorldManager.getInstance().loadWorld(worldName);
 
                             //Update profile
@@ -234,15 +236,9 @@ public class PlayerRealm {
     /**
      * This will begin the process of removing the player world. We remove the portal
      * blocks on the outside and inside of the realm. Then we remove the holograms.
-     * Afterwards we being the world unloading and then the FTP uploading.
-     *
-     * @param asyncUnload True if we want to upload the realm using async code.
-     *                    We want to use async code to upload the realm while people
-     *                    are playing on the server. However, if the server is shutting
-     *                    down, we want to upload the realm using sync code to ensure
-     *                    that the realm has been uploaded properly.
+     * Afterwards we being the world unloading and then saved to disk async.
      */
-    void closeRealm(boolean asyncUnload) {
+    void closeRealm() {
         if (!worldExists()) return;
 
         // Kick realm players
@@ -259,9 +255,6 @@ public class PlayerRealm {
 
         // Save and unload the world
         WorldManager.getInstance().unloadWorld(realmOwner.getUniqueId().toString());
-
-        // Following line is to save and unload the world via FTP.
-        //plugin.getSyncWorldUnloader().unloadWorld(realmOwner.getUniqueId().toString(), asyncUnload);
 
         realmOwner.sendMessage("");
         realmOwner.sendMessage(ChatColor.YELLOW + "Saving your realm...");
@@ -280,16 +273,8 @@ public class PlayerRealm {
         return false;
     }
 
-//    /**
-//     * This will toggle the downloading of the players realm from the FTP.
-//     */
-//    private void loadPlayerWorldViaFTP() {
-//        String name = realmOwner.getUniqueId().toString();
-//        plugin.getAsyncRealmDownloadFTP().downloadWorld(name);
-//    }
-
     /**
-     * This will toggle the downloading of the players realm from the FTP.
+     * This will toggle the loading of the players realm from disk.
      */
     private void loadPlayerWorld() {
         String name = realmOwner.getUniqueId().toString();

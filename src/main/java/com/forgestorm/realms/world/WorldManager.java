@@ -147,11 +147,11 @@ public class WorldManager extends BukkitRunnable {
 
         // Unload chunks
         for (Chunk chunk : world.getLoadedChunks()) {
-            chunk.unload(false);
+            chunk.unload(true);
         }
 
         // Unload the world
-        Bukkit.unloadWorld(world, false);
+        Bukkit.unloadWorld(world, true);
         loadedWorlds.remove(worldName);
 
         // Prepare the directory for saving.
